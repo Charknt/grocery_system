@@ -1,18 +1,43 @@
 import sqlite3
 
-conn = sqlite3.connect("grocery.db")
-cursor = conn.cursor()
+DATABASE_NAME = "grocery.db"
 
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS products (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    price REAL NOT NULL,
-    quantity INTEGER NOT NULL
-)
-""")
 
-conn.commit()
-conn.close()
+def get_connection():
+    return sqlite3.connect(DATABASE_NAME)
 
-print("Database created successfully!")
+
+def create_tables():
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS products (
+        product_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_name TEXT NOT NULL,
+        category TEXT NOT NULL,
+        brand TEXT NOT NULL,
+        unit_price REAL NOT NULL,
+        stock_quantity INTEGER NOT NULL,
+        expiry_date TEXT NOT NULL
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS suppliers (
+        supplier_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        supplier_name TEXT NOT NULL,
+        contact_number TEXT NOT NULL,
+        email_address TEXT NOT NULL,
+        delivery_schedule TEXT NOT NULL
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+if __name__ == "__main__":
+    create_tables()
+    print("Database created successfully!")
