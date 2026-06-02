@@ -1,143 +1,296 @@
-import sqlite3
+from db import get_connection
+from datetime import datetime
 
-conn = sqlite3.connect("grocery.db")
-cursor = conn.cursor()
+CATEGORIES = [
+    "Canned Goods",
+    "Snacks",
+    "Drinks",
+    "Instant Noodles",
+    "Toiletries",
+    "Cleaning Supplies",
+    "Household",
+    "Others"
+]
 
 # CREATE
 def add_product():
-    name = input("Enter product name: ").strip()
 
-    if not name:
-        print("Product name cannot be empty.")
-        return
-    
+    conn = get_connection()
+    cursor = conn.cursor()
+
     try:
-        price = float(input("Enter price: "))
-        quantity = int(input("Enter quantity: "))
+        product_name = input("Enter product name: ").strip()
 
+        if not product_name:
+            print("Product name cannot be empty.\n")
+            return
+        
         cursor.execute(
-            "SELECT * FROM products WHERE name = ?",
-            (name,)
+            """
+            SELECT * FROM products
+            WHERE LOWER(product_name) = LOWER(?)
+            """,
+            (product_name,)
         )
 
         if cursor.fetchone():
-            print("Product already exists.")
-            return
-
-        if price < 0:
-            print("The price cannot be negative value")
+            print("Product already exists.\n")
             return
         
-        if quantity < 0:
-            print("The quantity cannot be negative")
-            return        
+        print("\nAvailable Categories:")
+
+        for i, category in enumerate(CATEGORIES, start=1):
+            print(f"{i}. {category}")
+
+        try:
+            category_choice = int(input("Choose category: "))
+            category = CATEGORIES[category_choice - 1]
+
+        except (ValueError, IndexError):
+            print("Invalid category.\n")
+            return
+
+        brand = input("Enter brand: ").strip()
+
+        if not brand:
+            print("Brand cannot be empty.\n")
+            return
+
+        expiry_date = input("Enter expiry date (YYYY-MM-DD): ").strip()
+
+        if not expiry_date:
+            print("Expiry date cannot be empty.\n")
+            return
+
+        try:
+            datetime.strptime(expiry_date, "%Y-%m-%d")
+
+        except ValueError:
+            print("Invalid date format.\n")
+            return
+
+        try:
+            unit_price = float(
+                input("Enter unit price: ")
+            )
+
+            stock_quantity = int(
+                input("Enter stock quantity: ")
+            )
+
+        except ValueError:
+            print("Invalid input.\n")
+            return
+
+        if unit_price < 0:
+            print("Price cannot be negative.\n")
+            return
+
+        if stock_quantity < 0:
+            print("Quantity cannot be negative.\n")
+            return
 
         cursor.execute(
             """
-            INSERT INTO products(name, price, quantity)
-            VALUES (?, ?, ?)
+            INSERT INTO products(
+                product_name,
+                category,
+                brand,
+                unit_price,
+                stock_quantity,
+                expiry_date
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (name, price, quantity)
+            (
+                product_name,
+                category,
+                brand,
+                unit_price,
+                stock_quantity,
+                expiry_date
+            )
         )
-
-
 
         conn.commit()
 
         print("Product added successfully!\n")
 
-    except ValueError:
-        print("Invalid input.\n")
-
+    finally:
+        conn.close()
 
 # READ
 def view_products():
 
-    cursor.execute("SELECT * FROM products")
-    products = cursor.fetchall()
+    conn = get_connection()
+    cursor = conn.cursor()
 
-    if not products:
-        print("There are no products. Please add a product first.\n")
-        return False
+    try:
 
-    print("\n=== PRODUCT LIST ===")
+        cursor.execute("SELECT * FROM products")
+        products = cursor.fetchall()
 
-    for product in products:
+        if not products:
+            print("There are no products. Please add a product first.\n")
+            return False
 
-        print(
-            f"{product[0]}. {product[1]} | "
-            f"Price: ₱{product[2]:.2f} | "
-            f"Stock: {product[3]}"
-        )
+        print("\n=== PRODUCT LIST ===")
 
-    print()
+        for product in products:
+            print(
+                f"{product[0]} | "
+                f"Product name: {product[1]} | "
+                f"Category: {product[2]} | "
+                f"Brand: {product[3]} | "
+                f"Unit Price: ₱{product[4]:.2f} | "
+                f"Stock: {product[5]} | "
+                f"Expiry: {product[6]}"
+            )
 
-    return True
+        print()
 
-# UPDATE
+        return True
+
+    finally:
+        conn.close()
+
+#UPDATE
 def update_product():
 
     if not view_products():
         return
-    
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
     try:
 
-        product_id = int(
-            input("Enter product ID to update: ")
+        try:
+            product_id = int(input("Enter product ID to update: "))
+        except ValueError:
+            print("Invalid product ID.\n")
+            return
+
+        cursor.execute(
+            """
+            SELECT * FROM products
+            WHERE product_id = ?
+            """,
+            (product_id,)
         )
 
-        new_name = input("New name: ").strip()
+        if not cursor.fetchone():
+            print("Product not found.\n")
+            return
+
+        new_name = input("New product name: ").strip()
 
         if not new_name:
-            print("Product name cannot be empty.")
-            return        
-        
-        new_price = float(input("New price: "))
-        new_quantity = int(input("New quantity: "))
+            print("Product name cannot be empty.\n")
+            return
+
+        print("\nAvailable Categories:")
+
+        for i, category in enumerate(CATEGORIES, start=1):
+            print(f"{i}. {category}")
+
+        try:
+            category_choice = int(input("Choose new category: "))
+            new_category = CATEGORIES[category_choice - 1]
+
+        except (ValueError, IndexError):
+            print("Invalid category.\n")
+            return
+
+        new_brand = input("New brand: ").strip()
+
+        if not new_brand:
+            print("Brand cannot be empty.\n")
+            return
+
+        new_expiry_date = input("New expiry date (YYYY-MM-DD): ").strip()
+
+        if not new_expiry_date:
+            print("Expiry date cannot be empty.\n")
+            return
+
+        try:
+            datetime.strptime(
+                new_expiry_date,
+                "%Y-%m-%d"
+            )
+        except ValueError:
+            print("Invalid date format.\n")
+            return
+
+        try:
+            new_price = float(input("New price: "))
+            new_quantity = int(input("New quantity: "))
+        except ValueError:
+            print("Invalid price or quantity.\n")
+            return
 
         if new_price < 0:
-            print("Price cannot be negative value.")
+            print("Price cannot be negative.\n")
             return
 
         if new_quantity < 0:
-            print("Quantity cannot be negative.")
+            print("Quantity cannot be negative.\n")
             return
 
         cursor.execute(
             """
             UPDATE products
-            SET name = ?, price = ?, quantity = ?
-            WHERE id = ?
+            SET
+                product_name = ?,
+                category = ?,
+                brand = ?,
+                unit_price = ?,
+                stock_quantity = ?,
+                expiry_date = ?
+            WHERE product_id = ?
             """,
-            (new_name, new_price, new_quantity, product_id)
+            (
+                new_name,
+                new_category,
+                new_brand,
+                new_price,
+                new_quantity,
+                new_expiry_date,
+                product_id
+            )
         )
 
         conn.commit()
 
-        if cursor.rowcount > 0:
-            print("Product updated successfully!\n")
-        else:
-            print("Product not found.\n")
+        print("Product updated successfully!\n")
 
-    except ValueError:
-        print("Invalid input.\n")
+    finally:
+        conn.close()
 
-# DELETE
+
+# DELETE Professional databases never resequence IDs after deletion.
 def delete_product():
 
     if not view_products():
         return
 
+    conn = get_connection()
+    cursor = conn.cursor()
+
     try:
 
-        product_id = int(
-            input("Enter product ID to delete: ")
-        )
+        try:
+            product_id = int(input("Enter product ID to delete: "))
+
+        except ValueError:
+            print("Invalid product ID.\n")
+            return
 
         cursor.execute(
             """
             DELETE FROM products
-            WHERE id = ?
+            WHERE product_id = ?
             """,
             (product_id,)
         )
@@ -146,40 +299,12 @@ def delete_product():
 
         if cursor.rowcount > 0:
             print("Product deleted successfully!\n")
+
         else:
             print("Product not found.\n")
 
     except ValueError:
         print("Invalid input.\n")
 
-
-# MAIN MENU
-while True:
-    print("=== GROCERY INVENTORY SYSTEM ===")
-    print("1. Add Product")
-    print("2. View Products")
-    print("3. Update Product")
-    print("4. Delete Product")
-    print("5. Exit")
-
-    choice = input("Choose an option: ")
-
-    if choice == "1":
-        add_product()
-
-    elif choice == "2":
-        view_products()
-
-    elif choice == "3":
-        update_product()
-
-    elif choice == "4":
-        delete_product()
-
-    elif choice == "5":
+    finally:
         conn.close()
-        print("Thank you for using the system!")
-        break
-
-    else:
-        print("Invalid choice.\n")
