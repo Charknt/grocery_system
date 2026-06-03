@@ -82,7 +82,12 @@ def add_supplier():
             )
             VALUES (?, ?, ?, ?)
             """,
-            (name, contact_number, email_address, delivery_schedule)
+            (
+                name, 
+                contact_number, 
+                email_address,
+                delivery_schedule
+            )
         )
 
         conn.commit()
@@ -224,7 +229,7 @@ def update_supplier():
     finally:
         conn.close()
 
-# DELETE Professional databases never resequence IDs after deletion.
+# DELETE 
 def delete_supplier():
 
     if not view_supplier():
