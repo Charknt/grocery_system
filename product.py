@@ -269,7 +269,7 @@ def update_product():
         conn.close()
 
 
-# DELETE Professional databases never resequence IDs after deletion.
+# DELETE 
 def delete_product():
 
     if not view_products():
