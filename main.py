@@ -12,6 +12,13 @@ from supplier import (
     delete_supplier
 )
 
+from staff import (
+    add_staff,
+    view_staff,
+    update_staff,
+    delete_staff
+)
+
 while True:
 
     print("=== GROCERY INVENTORY SYSTEM ===")
@@ -23,7 +30,11 @@ while True:
     print("6. View Supplier")
     print("7. Update Supplier")
     print("8. Delete Supplier")
-    print("9. Exit")
+    print("9. Add Staff")
+    print("10. View Staff")
+    print("11. Update Staff")
+    print("12. Delete Staff")    
+    print("13. Exit")
 
     choice = input("Choose an option: ")
 
@@ -50,8 +61,20 @@ while True:
 
     elif choice == "8":
         delete_supplier()
-    
+
     elif choice == "9":
+            add_staff()
+
+    elif choice == "10":
+            view_staff()
+
+    elif choice == "11":
+            update_staff()
+
+    elif choice == "12":
+            delete_staff()
+
+    elif choice == "13":
         print("Thank you for using the system!")
         break
     else:
