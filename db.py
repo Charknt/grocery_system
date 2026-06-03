@@ -34,6 +34,34 @@ def create_tables():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE staffs(
+        staff_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        first_name TEXT NOT NULL,
+        middle_initial TEXT,
+        last_name TEXT NOT NULL,
+        role TEXT NOT NULL,
+        shift TEXT NOT NULL,
+        contact_number TEXT NOT NULL
+    )   
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS deliveries (
+        delivery_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        delivery_date TEXT NOT NULL,
+        quantity_received INTEGER NOT NULL,
+        total_cost REAL NOT NULL,
+        supplier_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+        staff_id INTEGER NOT NULL,
+
+        FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
+        FOREIGN KEY (product_id) REFERENCES products(product_id),
+        FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
+    )
+    """)
+
     conn.commit()
     conn.close()
 
