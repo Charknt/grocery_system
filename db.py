@@ -20,7 +20,7 @@ def create_tables():
         brand TEXT NOT NULL,
         unit_price REAL NOT NULL,
         stock_quantity INTEGER NOT NULL,
-        expiry_date TEXT NOT NULL
+        expiry_date TEXT
     )
     """)
 
@@ -35,7 +35,7 @@ def create_tables():
     """)
 
     cursor.execute("""
-    CREATE TABLE staffs(
+    CREATE TABLE IF NOT EXISTS staffs(
         staff_id INTEGER PRIMARY KEY AUTOINCREMENT,
         first_name TEXT NOT NULL,
         middle_initial TEXT,
@@ -58,7 +58,7 @@ def create_tables():
 
         FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
         FOREIGN KEY (product_id) REFERENCES products(product_id),
-        FOREIGN KEY (staff_id) REFERENCES staff(staff_id)
+        FOREIGN KEY (staff_id) REFERENCES staffs(staff_id)
     )
     """)
 
