@@ -47,19 +47,6 @@ def add_staff():
             print("Last name cannot be empty.\n")
             return
 
-        cursor.execute(
-            """
-            SELECT * FROM staffs
-            WHERE LOWER(first_name) = LOWER(?) AND LOWER(last_name) = LOWER(?)
-            """,
-            (first_name, 
-             last_name)
-        )
-
-        if cursor.fetchone():
-            print("A staff member with this name already exists.\n")
-            return
-
         print("\nAvailable Roles:")
 
         for i, role in enumerate(ROLES, start=1):
@@ -91,7 +78,15 @@ def add_staff():
         if not contact_number:
             print("Contact number cannot be empty.\n")
             return
+        
+        if not contact_number.isdigit():
+            print("Inavalid contact number.\n")
+            return
 
+        if len(contact_number) != 11:
+            print("Inavalid contact number.\n")
+            return
+        
         cursor.execute(
             """
             INSERT INTO staffs(
@@ -190,10 +185,16 @@ def update_staff():
             print("First name cannot be empty.\n")
             return
 
-        new_middle_initial = input("New middle initial (Press Enter to skip): ").strip()
+        while True:
+            new_middle_initial = input("New middle initial (Press Enter to skip): ").strip()
 
-        if not new_middle_initial:
-            new_middle_initial = None
+            if not new_middle_initial:
+                middle_initial = None
+                break
+
+            if len(new_middle_initial) == 1 and new_middle_initial.isalpha():
+                new_middle_initial = new_middle_initial.upper()
+                break
 
         new_last_name = input("New last name: ").strip()
 
@@ -233,6 +234,14 @@ def update_staff():
             print("Contact number cannot be empty.\n")
             return
 
+        if not new_contact_number.isdigit():
+            print("Inavalid contact number.\n")
+            return
+
+        if len(new_contact_number) != 11:
+            print("Inavalid contact number.\n")
+            return
+        
         cursor.execute(
             """
             UPDATE staffs
