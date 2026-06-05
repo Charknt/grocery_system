@@ -109,7 +109,7 @@ def view_supplier():
         suppliers = cursor.fetchall()
 
         if not suppliers:
-            print("There are no supplier/s. Please add supplier first.\n")
+            print("There are no suppliers. Please add supplier first.\n")
             return False
 
         print("\n=== SUPPLIER LIST ===")
