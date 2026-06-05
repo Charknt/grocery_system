@@ -80,11 +80,11 @@ def add_staff():
             return
         
         if not contact_number.isdigit():
-            print("Inavalid contact number.\n")
+            print("Invalid contact number.\n")
             return
 
         if len(contact_number) != 11:
-            print("Inavalid contact number.\n")
+            print("Invalid contact number.\n")
             return
         
         cursor.execute(
@@ -189,7 +189,7 @@ def update_staff():
             new_middle_initial = input("New middle initial (Press Enter to skip): ").strip()
 
             if not new_middle_initial:
-                middle_initial = None
+                new_middle_initial = None
                 break
 
             if len(new_middle_initial) == 1 and new_middle_initial.isalpha():
@@ -235,11 +235,11 @@ def update_staff():
             return
 
         if not new_contact_number.isdigit():
-            print("Inavalid contact number.\n")
+            print("Invalid contact number.\n")
             return
 
         if len(new_contact_number) != 11:
-            print("Inavalid contact number.\n")
+            print("Invalid contact number.\n")
             return
         
         cursor.execute(
