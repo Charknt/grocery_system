@@ -21,7 +21,9 @@ from staff import (
 
 from delivery import (
      add_delivery,
-     view_delivery
+     view_delivery,
+     update_delivery,
+     delete_delivery
 )
 while True:
 
@@ -40,7 +42,9 @@ while True:
     print("12. Delete Staff")    
     print("13. Add Delivery")
     print("14. View Delivery")
-    print("15. Exit")
+    print("15. Update Delivery")
+    print("16. Delete Delivery")
+    print("17. Exit")
 
     choice = input("Choose an option: ")
 
@@ -87,6 +91,12 @@ while True:
         view_delivery()
 
     elif choice == "15":
+        update_delivery()
+
+    elif choice == "16":
+        delete_delivery()
+
+    elif choice == "17":
         print("Thank you for using the system!")
         break
     else:
