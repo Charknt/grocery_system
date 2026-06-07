@@ -123,10 +123,11 @@ def add_delivery():
 
         print(
             f"\nSummary:"
+            f"\nDelivery Date: {delivery_date}"
             f"\nProduct: {product_name}"
             f"\nSupplier: {supplier_name}"
             f"\nStaff: {staff_name}"
-            f"\nQuantity: {quantity_received}"
+            f"\nQuantity Received: {quantity_received}"
             f"\nTotal Cost: ₱{total_cost:.2f}"
         )
 
@@ -186,6 +187,7 @@ def add_delivery():
     
     finally:
         conn.close()
+
 
 # READ
 def view_delivery():
@@ -247,3 +249,214 @@ def view_delivery():
     finally:
         conn.close()
 
+
+# UPDATE
+def update_delivery():
+
+    if not view_delivery():
+        return
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        try:
+            delivery_id = int(input("Enter Delivery ID to update: "))
+
+        except ValueError:
+            print("Invalid Delivery ID.\n")
+            return
+
+        cursor.execute(
+            """
+            SELECT
+                product_id,
+                quantity_received
+            FROM deliveries
+            WHERE delivery_id = ?
+            """,
+            (delivery_id,)
+        )
+
+        delivery = cursor.fetchone()
+
+        if not delivery:
+            print("Delivery not found.\n")
+            return
+
+        product_id = delivery[0]
+        old_quantity = delivery[1]
+
+        try:
+            new_quantity = int(input("New quantity received: "))
+
+            if new_quantity <= 0:
+                print("Quantity must be greater than zero.\n")
+                return
+
+        except ValueError:
+            print("Invalid quantity.\n")
+            return
+
+        new_date = input("New delivery date (YYYY-MM-DD): ").strip()
+
+        try:
+            datetime.strptime(new_date,"%Y-%m-%d")
+
+        except ValueError:
+            print("Invalid date format.\n")
+            return
+
+        cursor.execute(
+            """
+            SELECT unit_price
+            FROM products
+            WHERE product_id = ?
+            """,
+            (product_id,)
+        )
+
+        unit_price = cursor.fetchone()[0]
+
+        new_total_cost = (unit_price * new_quantity)
+
+        print(
+            f"\nNew Quantity: {new_quantity}"
+            f"\nNew Total Cost: ₱{new_total_cost:.2f}"
+        )
+
+        confirm = input("\nSave changes? (Y/N): ").strip().upper()
+
+        if confirm != "Y":
+            print("Update cancelled.\n")
+            return
+
+        cursor.execute(
+            """
+            UPDATE deliveries
+            SET
+                quantity_received = ?,
+                total_cost = ?,
+                delivery_date = ?
+            WHERE delivery_id = ?
+            """,
+            (
+                new_quantity,
+                new_total_cost,
+                new_date,
+                delivery_id
+            )
+        )
+
+        quantity_difference = (new_quantity - old_quantity)
+
+        cursor.execute(
+            """
+            UPDATE products
+            SET stock_quantity =
+                stock_quantity + ?
+            WHERE product_id = ?
+            """,
+            (
+                quantity_difference,
+                product_id
+            )
+        )
+
+        conn.commit()
+
+        print("Delivery updated successfully!\n")
+
+    except Exception as e:
+        print(f"Error: {e}")
+        conn.rollback()
+
+    finally:
+        conn.close()
+
+
+# DELETE
+def delete_delivery():
+
+    if not view_delivery():
+        return
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        try:
+            delivery_id = int(input("Enter Delivery ID to delete: "))
+
+        except ValueError:
+            print("Invalid Delivery ID.\n")
+            return
+
+        cursor.execute(
+            """
+            SELECT
+                product_id,
+                quantity_received
+            FROM deliveries
+            WHERE delivery_id = ?
+            """,
+            (delivery_id,)
+        )
+
+        delivery = cursor.fetchone()
+
+        if not delivery:
+            print("Delivery not found.\n")
+            return
+
+        product_id = delivery[0]
+        quantity_received = delivery[1]
+
+        print(
+            f"\nQuantity to remove from stock: "
+            f"{quantity_received}"
+        )
+
+        confirm = input("\nDelete this delivery? (Y/N): ").strip().upper()
+
+        if confirm != "Y":
+            print("Deletion cancelled.\n")
+            return
+
+        # Remove stock added by delivery
+
+        cursor.execute(
+            """
+            UPDATE products
+            SET stock_quantity =
+                stock_quantity - ?
+            WHERE product_id = ?
+            """,
+            (
+                quantity_received,
+                product_id
+            )
+        )
+
+        # Delete delivery record
+
+        cursor.execute(
+            """
+            DELETE FROM deliveries
+            WHERE delivery_id = ?
+            """,
+            (delivery_id,)
+        )
+
+        conn.commit()
+
+        print("Delivery deleted successfully!\n")
+
+    except Exception as e:
+        print(f"Error: {e}")
+        conn.rollback()
+       
+    finally:
+        conn.close()
