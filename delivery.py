@@ -268,6 +268,8 @@ def update_delivery():
             print("Invalid Delivery ID.\n")
             return
 
+        # Check delivery
+
         cursor.execute(
             """
             SELECT
@@ -288,6 +290,8 @@ def update_delivery():
         product_id = delivery[0]
         old_quantity = delivery[1]
 
+        # New quantity
+
         try:
             new_quantity = int(input("New quantity received: "))
 
@@ -299,30 +303,71 @@ def update_delivery():
             print("Invalid quantity.\n")
             return
 
+        # New date
+
         new_date = input("New delivery date (YYYY-MM-DD): ").strip()
 
+        if not new_date:
+            print("Delivery date cannot be empty.\n")
+            return
+
         try:
-            datetime.strptime(new_date,"%Y-%m-%d")
+            datetime.strptime( new_date,"%Y-%m-%d")
 
         except ValueError:
             print("Invalid date format.\n")
             return
 
+        # Get product info
+
         cursor.execute(
             """
-            SELECT unit_price
+            SELECT
+                product_name,
+                unit_price,
+                stock_quantity
             FROM products
             WHERE product_id = ?
             """,
             (product_id,)
         )
 
-        unit_price = cursor.fetchone()[0]
+        product = cursor.fetchone()
+
+        if not product:
+            print("Product not found.\n")
+            return
+
+        product_name = product[0]
+        unit_price = product[1]
+        current_stock = product[2]
+
+        # Calculations
+
+        quantity_difference = (new_quantity - old_quantity)
+
+        new_stock = (current_stock + quantity_difference)
+
+        if new_stock < 0:
+            print(
+                "\nCannot update delivery."
+                f"\nCurrent Stock: {current_stock}"
+                f"\nOld Quantity: {old_quantity}"
+                f"\nNew Quantity: {new_quantity}"
+                "\nStock would become negative.\n"
+            )
+            return
 
         new_total_cost = (unit_price * new_quantity)
 
+        # Summary
+
         print(
+            f"\nSummary:"
+            f"\nProduct: {product_name}"
+            f"\nOld Quantity: {old_quantity}"
             f"\nNew Quantity: {new_quantity}"
+            f"\nProjected Stock: {new_stock}"
             f"\nNew Total Cost: ₱{new_total_cost:.2f}"
         )
 
@@ -331,6 +376,8 @@ def update_delivery():
         if confirm != "Y":
             print("Update cancelled.\n")
             return
+
+        # Update delivery
 
         cursor.execute(
             """
@@ -349,7 +396,7 @@ def update_delivery():
             )
         )
 
-        quantity_difference = (new_quantity - old_quantity)
+        # Update stock
 
         cursor.execute(
             """
@@ -369,10 +416,13 @@ def update_delivery():
         print("Delivery updated successfully!\n")
 
     except Exception as e:
-        print(f"Error: {e}")
+
         conn.rollback()
 
+        print(f"Error: {e}")
+
     finally:
+
         conn.close()
 
 
@@ -414,10 +464,39 @@ def delete_delivery():
         product_id = delivery[0]
         quantity_received = delivery[1]
 
+        # Check current stock
+
+        cursor.execute(
+            """
+            SELECT stock_quantity
+            FROM products
+            WHERE product_id = ?
+            """,
+            (product_id,)
+        )
+
+        product = cursor.fetchone()
+
+        if not product:
+            print("Product not found.\n")
+            return
+
+        current_stock = product[0]
+
+        if current_stock < quantity_received:
+            print(
+                f"\nCannot delete delivery."
+                f"\nCurrent Stock: {current_stock}"
+                f"\nDelivery Quantity: {quantity_received}"
+                f"\nStock would become negative.\n"
+            )
+            return
+
         print(
             f"\nQuantity to remove from stock: "
             f"{quantity_received}"
         )
+
 
         confirm = input("\nDelete this delivery? (Y/N): ").strip().upper()
 
