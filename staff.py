@@ -79,11 +79,7 @@ def add_staff():
             print("Contact number cannot be empty.\n")
             return
         
-        if not contact_number.isdigit():
-            print("Invalid contact number.\n")
-            return
-
-        if len(contact_number) != 11:
+        if not contact_number.isdigit() or len(contact_number) != 11:
             print("Invalid contact number.\n")
             return
         
@@ -234,11 +230,7 @@ def update_staff():
             print("Contact number cannot be empty.\n")
             return
 
-        if not new_contact_number.isdigit():
-            print("Invalid contact number.\n")
-            return
-
-        if len(new_contact_number) != 11:
+        if not new_contact_number.isdigit() or len(new_contact_number) != 11:
             print("Invalid contact number.\n")
             return
         
@@ -288,6 +280,22 @@ def delete_staff():
 
         except ValueError:
             print("Invalid staff ID.\n")
+            return
+        
+        cursor.execute(
+            """
+            SELECT *
+            FROM deliveries
+            WHERE staff_id = ?
+            """,
+            (staff_id,)
+        )
+
+        if cursor.fetchone():
+            print(
+                "Cannot delete staff. "
+                "Staff is used in delivery records.\n"
+            )
             return
 
         cursor.execute(
