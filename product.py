@@ -70,20 +70,16 @@ def add_product():
             return
 
         try:
-            unit_price = float(
-                input("Enter unit price: ")
-            )
+            unit_price = float(input("Enter unit price: "))
 
-            stock_quantity = int(
-                input("Enter stock quantity: ")
-            )
+            stock_quantity = int(input("Enter stock quantity: "))
 
         except ValueError:
             print("Invalid input.\n")
             return
 
-        if unit_price < 0:
-            print("Price cannot be negative.\n")
+        if unit_price <= 0:
+            print("Price must be greater than zero.\n")
             return
 
         if stock_quantity < 0:
@@ -96,9 +92,9 @@ def add_product():
                 product_name,
                 category,
                 brand,
+                expiry_date,
                 unit_price,
-                stock_quantity,
-                expiry_date
+                stock_quantity
             )
             VALUES (?, ?, ?, ?, ?, ?)
             """,
@@ -106,9 +102,9 @@ def add_product():
                 product_name,
                 category,
                 brand,
+                expiry_date,
                 unit_price,
-                stock_quantity,
-                expiry_date
+                stock_quantity
             )
         )
 
@@ -167,6 +163,7 @@ def update_product():
 
         try:
             product_id = int(input("Enter product ID to update: "))
+
         except ValueError:
             print("Invalid product ID.\n")
             return
@@ -215,27 +212,21 @@ def update_product():
             return
 
         try:
-            datetime.strptime(
-                new_expiry_date,
-                "%Y-%m-%d"
-            )
+            datetime.strptime(new_expiry_date,"%Y-%m-%d")
+
         except ValueError:
             print("Invalid date format.\n")
             return
 
         try:
             new_price = float(input("New price: "))
-            new_quantity = int(input("New quantity: "))
+
         except ValueError:
             print("Invalid price or quantity.\n")
             return
 
-        if new_price < 0:
-            print("Price cannot be negative.\n")
-            return
-
-        if new_quantity < 0:
-            print("Quantity cannot be negative.\n")
+        if new_price <= 0:
+            print("Price must be greater than zero.\n")
             return
 
         cursor.execute(
@@ -246,7 +237,6 @@ def update_product():
                 category = ?,
                 brand = ?,
                 unit_price = ?,
-                stock_quantity = ?,
                 expiry_date = ?
             WHERE product_id = ?
             """,
@@ -255,7 +245,6 @@ def update_product():
                 new_category,
                 new_brand,
                 new_price,
-                new_quantity,
                 new_expiry_date,
                 product_id
             )
@@ -285,6 +274,22 @@ def delete_product():
 
         except ValueError:
             print("Invalid product ID.\n")
+            return
+        
+        cursor.execute(
+            """
+            SELECT *
+            FROM deliveries
+            WHERE product_id = ?
+            """,
+            (product_id,)
+        )
+
+        if cursor.fetchone():
+            print(
+                "Cannot delete product. "
+                "Product is used in delivery records.\n"
+            )
             return
 
         cursor.execute(
