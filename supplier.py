@@ -45,6 +45,10 @@ def add_supplier():
         if not contact_number:
             print("Phone number cannot be empty.\n")
             return
+        
+        if not contact_number.isdigit() or len(contact_number) != 11:
+            print("Inavalid phone number.\n")
+            return
 
         email_address = input("Enter email address: ").strip()
 
@@ -52,7 +56,7 @@ def add_supplier():
             print("Email address cannot be empty.\n")
             return
 
-        if "@" not in email_address:
+        if "@" not in email_address or "." not in email_address:
             print("Invalid email address.\n")
             return
         
@@ -141,9 +145,7 @@ def update_supplier():
     try:
 
         try:
-            supplier_id = int(
-                input("Enter supplier ID to update: ")
-            )
+            supplier_id = int(input("Enter supplier ID to update: "))
 
         except ValueError:
             print("Invalid supplier ID.\n")
@@ -167,23 +169,23 @@ def update_supplier():
             print("Supplier name cannot be empty.\n")
             return
 
-        new_contact_number = input(
-            "New contact number: "
-        ).strip()
+        new_contact_number = input("New contact number: ").strip()
 
         if not new_contact_number:
             print("Contact number cannot be empty.\n")
             return
+        
+        if not new_contact_number.isdigit() or len(new_contact_number) != 11:
+            print("Invalid contact number.")
+            return
 
-        new_email_address = input(
-            "New email address: "
-        ).strip()
+        new_email_address = input("New email address: ").strip()
 
         if not new_email_address:
             print("Email address cannot be empty.\n")
             return
 
-        if "@" not in new_email_address:
+        if "@" not in new_email_address or "." not in new_email_address:
             print("Invalid email address.\n")
             return
         
@@ -241,12 +243,26 @@ def delete_supplier():
     try:
 
         try:
-            supplier_id = int(
-                input("Enter supplier ID to delete: ")
-            )
+            supplier_id = int(input("Enter supplier ID to delete: "))
 
         except ValueError:
             print("Invalid supplier ID.\n")
+            return
+        
+        cursor.execute(
+            """
+            SELECT *
+            FROM deliveries
+            WHERE supplier_id = ?
+            """,
+            (supplier_id,)
+        )
+
+        if cursor.fetchone():
+            print(
+                "Cannot delete supplier. "
+                "Supplier is used in delivery records.\n"
+            )
             return
 
         cursor.execute(
