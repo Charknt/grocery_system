@@ -12,6 +12,7 @@ CATEGORIES = [
     "Others"
 ]
 
+
 # CREATE
 def add_product():
 
@@ -23,18 +24,6 @@ def add_product():
 
         if not product_name:
             print("Product name cannot be empty.\n")
-            return
-        
-        cursor.execute(
-            """
-            SELECT * FROM products
-            WHERE LOWER(product_name) = LOWER(?)
-            """,
-            (product_name,)
-        )
-
-        if cursor.fetchone():
-            print("Product already exists.\n")
             return
         
         print("\nAvailable Categories:")
@@ -56,17 +45,21 @@ def add_product():
             print("Brand cannot be empty.\n")
             return
 
-        expiry_date = input("Enter expiry date (YYYY-MM-DD): ").strip()
-
-        if not expiry_date:
-            print("Expiry date cannot be empty.\n")
-            return
-
-        try:
-            datetime.strptime(expiry_date, "%Y-%m-%d")
-
-        except ValueError:
-            print("Invalid date format.\n")
+        cursor.execute(
+            """
+            SELECT *
+            FROM products
+            WHERE LOWER(product_name) = LOWER(?)
+            AND LOWER(brand) = LOWER(?)
+            """,
+            (
+                product_name,
+                brand
+            )
+        )
+        
+        if cursor.fetchone():
+            print("Product already exists.\n")
             return
 
         try:
@@ -85,6 +78,19 @@ def add_product():
         if stock_quantity < 0:
             print("Quantity cannot be negative.\n")
             return
+        
+        expiry_date = input("Enter expiry date (YYYY-MM-DD): ").strip()
+
+        if not expiry_date:
+            print("Expiry date cannot be empty.\n")
+            return
+
+        try:
+            datetime.strptime(expiry_date, "%Y-%m-%d")
+
+        except ValueError:
+            print("Invalid date format.\n")
+            return
 
         cursor.execute(
             """
@@ -92,9 +98,9 @@ def add_product():
                 product_name,
                 category,
                 brand,
-                expiry_date,
                 unit_price,
-                stock_quantity
+                stock_quantity,
+                expiry_date
             )
             VALUES (?, ?, ?, ?, ?, ?)
             """,
@@ -102,9 +108,9 @@ def add_product():
                 product_name,
                 category,
                 brand,
-                expiry_date,
                 unit_price,
-                stock_quantity
+                stock_quantity,
+                expiry_date
             )
         )
 
@@ -185,7 +191,21 @@ def update_product():
         if not new_name:
             print("Product name cannot be empty.\n")
             return
+        
+        cursor.execute(
+            """
+            SELECT *
+            FROM products
+            WHERE LOWER(product_name) = LOWER(?)
+            AND product_id != ?
+            """,
+            (new_name, product_id)
+        )
 
+        if cursor.fetchone():
+            print("Product name already exists.\n")
+            return
+        
         print("\nAvailable Categories:")
 
         for i, category in enumerate(CATEGORIES, start=1):
@@ -288,7 +308,23 @@ def delete_product():
         if cursor.fetchone():
             print(
                 "Cannot delete product. "
-                "Product is used in delivery records.\n"
+                "\nProduct is used in delivery records."
+            )
+            return
+        
+        cursor.execute(
+            """
+            SELECT *
+            FROM sales
+            WHERE product_id = ?
+            """,
+            (product_id,)
+        )
+
+        if cursor.fetchone():
+            print(
+                "Cannot delete product. "
+                "\nProduct is used in sales records."
             )
             return
 
@@ -310,6 +346,56 @@ def delete_product():
 
     except ValueError:
         print("Invalid input.\n")
+
+    finally:
+        conn.close()
+
+
+# SEARCH
+def search_product():
+
+    keyword = input("Enter product name to search: ").strip()
+
+    if not keyword:
+        print("Search keyword cannot be empty.\n")
+        return
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM products
+            WHERE LOWER(product_name)
+            LIKE LOWER(?)
+            """,
+            (f"%{keyword}%",)
+        )
+
+        products = cursor.fetchall()
+
+        if not products:
+            print("No products found.\n")
+            return
+
+        print("\n=== SEARCH RESULT ===")
+
+        for product in products:
+
+            print(
+                f"{product[0]} | "
+                f"Product Name: {product[1]} | "
+                f"Category: {product[2]} | "
+                f"Brand: {product[3]} | "
+                f"Unit Price: {product[4]:.2f} | "
+                f"Stock: {product[5]} | "
+                f"Expiry: {product[6]}"
+            )
+
+        print()
 
     finally:
         conn.close()
