@@ -47,7 +47,7 @@ def add_supplier():
             return
         
         if not contact_number.isdigit() or len(contact_number) != 11:
-            print("Inavalid phone number.\n")
+            print("Invalid phone number.\n")
             return
 
         email_address = input("Enter email address: ").strip()
@@ -169,6 +169,20 @@ def update_supplier():
             print("Supplier name cannot be empty.\n")
             return
 
+        cursor.execute(
+            """
+            SELECT *
+            FROM suppliers
+            WHERE LOWER(supplier_name) = LOWER(?)
+            AND supplier_id != ?
+            """,
+            (new_name, supplier_id)
+        )
+
+        if cursor.fetchone():
+            print("Supplier name already exists.\n")
+            return
+
         new_contact_number = input("New contact number: ").strip()
 
         if not new_contact_number:
@@ -176,7 +190,7 @@ def update_supplier():
             return
         
         if not new_contact_number.isdigit() or len(new_contact_number) != 11:
-            print("Invalid contact number.")
+            print("Invalid contact number.\n")
             return
 
         new_email_address = input("New email address: ").strip()
@@ -282,3 +296,52 @@ def delete_supplier():
 
     finally:
         conn.close()
+
+
+# SEARCH
+def search_supplier():
+
+    keyword = input("Enter supplier name to search: ").strip()
+
+    if not keyword:
+        print("Search keyword cannot be empty.\n")
+        return
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM suppliers
+            WHERE LOWER(supplier_name)
+            LIKE LOWER(?)
+            """,
+            (f"%{keyword}%",)
+        )
+
+        suppliers = cursor.fetchall()
+
+        if not suppliers:
+            print("No suppliers found.\n")
+            return
+
+        print("\n=== SEARCH RESULT ===")
+
+        for supplier in suppliers:
+
+            print(
+                f"{supplier[0]} | "
+                f"Supplier name: {supplier[1]} | "
+                f"contact number: {supplier[2]} | "
+                f"Email address: {supplier[3]} | "
+                f"Delivery schedule: {supplier[4]}"
+            )
+
+        print()
+
+    finally:
+        conn.close()
+
