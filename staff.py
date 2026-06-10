@@ -27,7 +27,11 @@ def add_staff():
         if not first_name:
             print("First name cannot be empty.\n")
             return
-
+        
+        if not first_name.replace(" ", "").isalpha():
+            print("Invalid first name.\n")
+            return
+        
         while True:
             middle_initial = input("Enter middle initial (Press Enter to skip): ").strip()
 
@@ -47,6 +51,10 @@ def add_staff():
             print("Last name cannot be empty.\n")
             return
 
+        if not last_name.replace(" ", "").isalpha():
+            print("Invalid last name.\n")
+            return
+        
         print("\nAvailable Roles:")
 
         for i, role in enumerate(ROLES, start=1):
@@ -181,6 +189,10 @@ def update_staff():
             print("First name cannot be empty.\n")
             return
 
+        if not new_first_name.replace(" ", "").isalpha():
+            print("Invalid first name.\n")
+            return
+        
         while True:
             new_middle_initial = input("New middle initial (Press Enter to skip): ").strip()
 
@@ -191,6 +203,9 @@ def update_staff():
             if len(new_middle_initial) == 1 and new_middle_initial.isalpha():
                 new_middle_initial = new_middle_initial.upper()
                 break
+                
+            if new_middle_initial.isdigit():
+                print("Invalid Input.\n")
 
         new_last_name = input("New last name: ").strip()
 
@@ -198,6 +213,10 @@ def update_staff():
             print("Last name cannot be empty.\n")
             return
 
+        if not new_last_name.replace(" ", "").isalpha():
+            print("Invalid last name.\n")
+            return
+        
         print("\nAvailable Roles:")
 
         for i, role in enumerate(ROLES, start=1):
@@ -294,10 +313,26 @@ def delete_staff():
         if cursor.fetchone():
             print(
                 "Cannot delete staff. "
-                "Staff is used in delivery records.\n"
+                "\nStaff is used in delivery records."
             )
             return
+        
+        cursor.execute(
+            """
+            SELECT *
+            FROM sales
+            WHERE staff_id = ?
+            """,
+            (staff_id,)
+        )
 
+        if cursor.fetchone():
+            print(
+                "Cannot delete staff. "
+                "\nStaff is used in sales records."
+            )
+            return
+        
         cursor.execute(
             """
             DELETE FROM staffs
@@ -310,9 +345,68 @@ def delete_staff():
 
         if cursor.rowcount > 0:
             print("Staff member deleted successfully!\n")
-            
         else:
             print("Staff member not found.\n")
 
     finally:
         conn.close()
+
+
+# SEARCH
+def search_staff():
+
+    keyword = input("Enter staff name to search: ").strip()
+
+    if not keyword:
+        print("Search keyword cannot be empty.\n")
+        return
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM staffs
+            WHERE LOWER(first_name)
+                LIKE LOWER(?)
+            OR LOWER(last_name)
+                LIKE LOWER(?)
+            """,
+            (
+                f"%{keyword}%",
+                f"%{keyword}%"
+            )
+        )
+
+        staffs = cursor.fetchall()
+
+        if not staffs:
+            print("No staff found.\n")
+            return
+
+        print("\n=== SEARCH RESULT ===")
+
+        for staff in staffs:
+
+            mi = (
+                f" {staff[2]}."
+                if staff[2]
+                else ""
+            )
+
+            print(
+                f"{staff[0]} | "
+                f"{staff[1]}{mi} {staff[3]} | "
+                f"Role: {staff[4]} | "
+                f"Shift: {staff[5]} | "
+                f"Contact: {staff[6]}"
+            )
+
+        print()
+
+    finally:
+        conn.close()
+
