@@ -4,7 +4,10 @@ DATABASE_NAME = "grocery.db"
 
 
 def get_connection():
-    return sqlite3.connect(DATABASE_NAME)
+    conn = sqlite3.connect(DATABASE_NAME)
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
 
 
 def create_tables():
@@ -59,6 +62,20 @@ def create_tables():
         FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id),
         FOREIGN KEY (product_id) REFERENCES products(product_id),
         FOREIGN KEY (staff_id) REFERENCES staffs(staff_id)
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS sales (
+        sale_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sale_date TEXT NOT NULL,
+        quantity_sold INTEGER NOT NULL,
+        total_amount REAL NOT NULL,
+        staff_id INTEGER NOT NULL,
+        product_id INTEGER NOT NULL,
+
+        FOREIGN KEY (staff_id) REFERENCES staffs(staff_id),
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
     )
     """)
 
