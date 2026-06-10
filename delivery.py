@@ -245,7 +245,8 @@ def view_delivery():
 
     except Exception as e:
         print(f"Error: {e}")
-
+        return False
+    
     finally:
         conn.close()
 
@@ -537,5 +538,77 @@ def delete_delivery():
         print(f"Error: {e}")
         conn.rollback()
        
+    finally:
+        conn.close()
+
+
+# SEARCH
+def search_delivery():
+
+    keyword = input(
+        "Enter delivery date (YYYY-MM-DD): "
+    ).strip()
+
+    if not keyword:
+        print("Search keyword cannot be empty.\n")
+        return
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute("""
+            SELECT
+                d.delivery_id,
+                p.product_name,
+                s.supplier_name,
+                CASE
+                    WHEN st.middle_initial IS NOT NULL
+                    AND st.middle_initial != ''
+                    THEN st.first_name || ' ' ||
+                         st.middle_initial || '. ' ||
+                         st.last_name
+                    ELSE st.first_name || ' ' ||
+                         st.last_name
+                END,
+                d.quantity_received,
+                d.total_cost,
+                d.delivery_date
+            FROM deliveries d
+            JOIN products p
+                ON d.product_id = p.product_id
+            JOIN suppliers s
+                ON d.supplier_id = s.supplier_id
+            JOIN staffs st
+                ON d.staff_id = st.staff_id
+            WHERE d.delivery_date LIKE ?
+            ORDER BY d.delivery_id
+        """,
+        (f"%{keyword}%",)
+        )
+
+        deliveries = cursor.fetchall()
+
+        if not deliveries:
+            print("No delivery records found.\n")
+            return
+
+        print("\n=== SEARCH RESULT ===")
+
+        for delivery in deliveries:
+
+            print(
+                f"\nDelivery ID: {delivery[0]}"
+                f"\nProduct: {delivery[1]}"
+                f"\nSupplier: {delivery[2]}"
+                f"\nStaff: {delivery[3]}"
+                f"\nQuantity Received: {delivery[4]}"
+                f"\nTotal Cost: ₱{delivery[5]:.2f}"
+                f"\nDelivery Date: {delivery[6]}"
+            )
+
+        print()
+
     finally:
         conn.close()
