@@ -2,52 +2,92 @@ from product import (
     add_product,
     view_products,
     update_product,
-    delete_product
+    delete_product,
+    search_product
 )
 
 from supplier import (
     add_supplier,
     view_supplier,
     update_supplier,
-    delete_supplier
+    delete_supplier,
+    search_supplier
 )
 
 from staff import (
     add_staff,
     view_staff,
     update_staff,
-    delete_staff
+    delete_staff,
+    search_staff
 )
 
 from delivery import (
-     add_delivery,
-     view_delivery,
-     update_delivery,
-     delete_delivery
+    add_delivery,
+    view_delivery,
+    update_delivery,
+    delete_delivery,
+    search_delivery
 )
+
+from sales import (
+    add_sale,
+    view_sales,
+    update_sale,
+    delete_sale,
+    search_sale
+)
+
+from reports import (
+    sales_summary,
+    delivery_summary,
+    inventory_summary,
+    best_selling_product,
+    low_stock_report
+)
+
 
 while True:
 
     print("=== GROCERY INVENTORY SYSTEM ===")
-    print("1. Add Product")
-    print("2. View Products")
-    print("3. Update Product")
-    print("4. Delete Product")
-    print("5. Add Supplier")
-    print("6. View Supplier")
-    print("7. Update Supplier")
-    print("8. Delete Supplier")
-    print("9. Add Staff")
-    print("10. View Staff")
-    print("11. Update Staff")
-    print("12. Delete Staff")    
-    print("13. Add Delivery")
-    print("14. View Delivery")
-    print("15. Update Delivery")
-    print("16. Delete Delivery")
-    print("17. Exit")
+    print("1.  Add Product")
+    print("2.  View Products")
+    print("3.  Update Product")
+    print("4.  Delete Product")
+    print("5.  Search Product")
 
-    choice = input("Choose an option: ")
+    print("6.  Add Supplier")
+    print("7.  View Supplier")
+    print("8.  Update Supplier")
+    print("9.  Delete Supplier")
+    print("10. Search Supplier")
+    
+    print("11. Add Staff")
+    print("12. View Staff")
+    print("13. Update Staff")
+    print("14. Delete Staff")
+    print("15. Search Staff")
+
+    print("16. Add Delivery")
+    print("17. View Delivery")
+    print("18. Update Delivery")
+    print("19. Delete Delivery")
+    print("20. Search Delivery")
+
+    print("21. Add Sale")
+    print("22. View Sales")
+    print("23. Update Sale")
+    print("24. Delete Sale")
+    print("25. Search Sale")
+
+    print("26. Sales Summary")
+    print("27. Delivery Summary")
+    print("28. Inventory Summary")
+    print("29. Best Selling Product")
+    print("30. Low Stock Report")
+    print("31. Exit")
+
+    choice = input("\nChoose an option: ").strip()
 
     if choice == "1":
         add_product()
@@ -62,44 +102,86 @@ while True:
         delete_product()
 
     elif choice == "5":
-        add_supplier()
+        search_product()
 
     elif choice == "6":
-        view_supplier()
+        add_supplier()
 
     elif choice == "7":
-        update_supplier()
+        view_supplier()
 
     elif choice == "8":
-        delete_supplier()
+        update_supplier()
 
     elif choice == "9":
-        add_staff()
+        delete_supplier()
 
     elif choice == "10":
-        view_staff()
+        search_supplier()
 
     elif choice == "11":
-        update_staff()
+        add_staff()
 
     elif choice == "12":
-        delete_staff()
+        view_staff()
 
     elif choice == "13":
-        add_delivery()
+        update_staff()
 
     elif choice == "14":
-        view_delivery()
+        delete_staff()
 
     elif choice == "15":
-        update_delivery()
+        search_staff()
 
     elif choice == "16":
-        delete_delivery()
+        add_delivery()
 
     elif choice == "17":
+        view_delivery()
+
+    elif choice == "18":
+        update_delivery()
+
+    elif choice == "19":
+        delete_delivery()
+
+    elif choice == "20":
+        search_delivery()
+
+    elif choice == "21":
+        add_sale()
+
+    elif choice == "22":
+        view_sales()
+
+    elif choice == "23":
+        update_sale()
+
+    elif choice == "24":
+        delete_sale()
+
+    elif choice == "25":
+        search_sale()
+
+    elif choice == "26":
+        sales_summary()
+
+    elif choice == "27":
+        delivery_summary()
+
+    elif choice == "28":
+        inventory_summary()
+
+    elif choice == "29":
+        best_selling_product()
+
+    elif choice == "30":
+        low_stock_report()
+
+    elif choice == "31":
         print("Thank you for using the system!")
         break
-        
+    
     else:
         print("Invalid choice.\n")
