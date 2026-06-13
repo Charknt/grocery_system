@@ -79,18 +79,19 @@ def add_product():
             print("Quantity cannot be negative.\n")
             return
         
-        expiry_date = input("Enter expiry date (YYYY-MM-DD): ").strip()
+        has_expiry = input("Does this product have an expiry date? (Y/N): ").strip().upper()
 
-        if not expiry_date:
-            print("Expiry date cannot be empty.\n")
-            return
+        if has_expiry == "Y":
+            expiry_date = input("Enter expiry date (YYYY-MM-DD) ").strip()
 
-        try:
-            datetime.strptime(expiry_date, "%Y-%m-%d")
+            try:
+                datetime.strptime(expiry_date,"%Y-%m-%d")
 
-        except ValueError:
-            print("Invalid date format.\n")
-            return
+            except ValueError:
+                print("Invalid date format.\n")
+                return
+        else:
+            expiry_date = None
 
         cursor.execute(
             """
@@ -146,9 +147,8 @@ def view_products():
                 f"Brand: {product[3]} | "
                 f"Unit Price: ₱{product[4]:.2f} | "
                 f"Stock: {product[5]} | "
-                f"Expiry: {product[6]}"
+                f"Expiry: {product[6] if product[6] else 'N/A'}" 
             )
-
         print()
 
         return True
@@ -225,18 +225,19 @@ def update_product():
             print("Brand cannot be empty.\n")
             return
 
-        new_expiry_date = input("New expiry date (YYYY-MM-DD): ").strip()
+        has_expiry = input("Does this product have an expiry date? (Y/N): ").strip().upper()
 
-        if not new_expiry_date:
-            print("Expiry date cannot be empty.\n")
-            return
+        if has_expiry == "Y":
+            new_expiry_date = input("New expiry date (YYYY-MM-DD) ").strip()
 
-        try:
-            datetime.strptime(new_expiry_date,"%Y-%m-%d")
+            try:
+                datetime.strptime(new_expiry_date,"%Y-%m-%d")
 
-        except ValueError:
-            print("Invalid date format.\n")
-            return
+            except ValueError:
+                print("Invalid date format.\n")
+                return
+        else:
+            new_expiry_date = None
 
         try:
             new_price = float(input("New price: "))
@@ -392,7 +393,7 @@ def search_product():
                 f"Brand: {product[3]} | "
                 f"Unit Price: {product[4]:.2f} | "
                 f"Stock: {product[5]} | "
-                f"Expiry: {product[6]}"
+                f"Expiry: {product[6] if product[6] else 'N/A'}"            
             )
 
         print()
