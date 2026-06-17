@@ -5,7 +5,7 @@ A beginner-friendly Python desktop application that manages grocery products, su
 ## Project Information
 
 * **Topic:** Inventory and Sales Management
-* **Level:** Beginner
+* **Level:** Intermediate
 * **Programming Language:** Python
 * **Database:** SQLite
 * **Interface:** Tkinter Desktop GUI
